@@ -1,12 +1,13 @@
 mod elf_header;
+mod elf_section;
 
 pub struct Analyzer {
-    pub config: AnalyzerConfig
+    pub config: AnalyzerConfig,
 }
 
 impl Analyzer {
     pub fn elf_info(
-        &self, 
+        &self,
         elf_file: &elf::ElfBytes<elf::endian::AnyEndian>,
     ) -> anyhow::Result<serde_json::Value> {
         match self.config.output_format {
@@ -15,23 +16,31 @@ impl Analyzer {
     }
 
     fn elf_info_as_json(
-        &self, 
+        &self,
         elf_file: &elf::ElfBytes<elf::endian::AnyEndian>,
-    ) -> anyhow::Result<serde_json::Value>{
+    ) -> anyhow::Result<serde_json::Value> {
         let ehdr_value = if self.config.ehdr {
-            self.elf_header_info_as_json(elf_file)?
+            self.elf_header_info_as_json(elf_file)
         } else {
             serde_json::json!({})
         };
-        let s = serde_json::json!({
-            "ehdr": ehdr_value,
-        });
-        Ok(s)
+
+        let shdrs_value = if self.config.shdrs {
+            self.elf_section_header_table_info_as_json(elf_file)?
+        } else {
+            serde_json::json!({})
+        };
+
+        Ok(serde_json::json!({
+            "elf_header": ehdr_value,
+            "section_header_table": shdrs_value,
+        }))
     }
 }
 
 pub struct AnalyzerConfig {
     pub ehdr: bool,
+    pub shdrs: bool,
     pub output_format: AnalyzerOutputFormat,
 }
 
@@ -39,6 +48,7 @@ impl AnalyzerConfig {
     pub fn new() -> Self {
         Self {
             ehdr: false,
+            shdrs: false,
             output_format: AnalyzerOutputFormat::Json,
         }
     }
@@ -48,10 +58,12 @@ impl AnalyzerConfig {
         self
     }
 
+    pub fn shdrs(mut self, shdrs: bool) -> Self {
+        self.shdrs = shdrs;
+        self
+    }
     pub fn build(self) -> Analyzer {
-        Analyzer{
-            config: self,
-        }
+        Analyzer { config: self }
     }
 }
 

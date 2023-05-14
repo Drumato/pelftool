@@ -1,7 +1,7 @@
-mod cli;
 mod analyzer;
+mod cli;
 
-fn main() -> anyhow::Result<()>{
+fn main() -> anyhow::Result<()> {
     env_logger::init();
 
     let matches = cli::root_command().get_matches();
@@ -12,7 +12,10 @@ fn main() -> anyhow::Result<()>{
     let file_data = std::fs::read(path)?;
     let elf_file = elf::ElfBytes::<elf::endian::AnyEndian>::minimal_parse(file_data.as_slice())?;
 
-    let elf_analyzer = analyzer::AnalyzerConfig::new().ehdr(*matches.get_one("parse-elf-header").unwrap()).build();
+    let elf_analyzer = analyzer::AnalyzerConfig::new()
+        .ehdr(*matches.get_one("parse-elf-header").unwrap())
+        .shdrs(*matches.get_one("parse-elf-section-headers").unwrap())
+        .build();
     println!("{}", elf_analyzer.elf_info(&elf_file)?.to_string());
 
     Ok(())
