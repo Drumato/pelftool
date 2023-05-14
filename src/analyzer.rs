@@ -1,5 +1,6 @@
 mod elf_header;
 mod elf_section;
+mod elf_segment;
 
 pub struct Analyzer {
     pub config: AnalyzerConfig,
@@ -31,16 +32,28 @@ impl Analyzer {
             serde_json::json!({})
         };
 
+        let phdrs_value = if self.config.phdrs {
+            self.elf_program_header_table_info_as_json(elf_file)
+        } else {
+            serde_json::json!({})
+        };
+
         Ok(serde_json::json!({
             "elf_header": ehdr_value,
             "section_header_table": shdrs_value,
+            "program_header_table": phdrs_value,
         }))
     }
 }
 
 pub struct AnalyzerConfig {
+    /// determines the analyzer tries to construct the information about elf header.
     pub ehdr: bool,
+    /// determines the analyzer tries to construct the information about elf section header table.
     pub shdrs: bool,
+    /// determines the analyzer tries to construct the information about elf program header table.
+    pub phdrs: bool,
+    /// determines the output format of elf information.
     pub output_format: AnalyzerOutputFormat,
 }
 
@@ -49,6 +62,7 @@ impl AnalyzerConfig {
         Self {
             ehdr: false,
             shdrs: false,
+            phdrs: false,
             output_format: AnalyzerOutputFormat::Json,
         }
     }
@@ -62,6 +76,12 @@ impl AnalyzerConfig {
         self.shdrs = shdrs;
         self
     }
+
+    pub fn phdrs(mut self, phdrs: bool) -> Self {
+        self.phdrs = phdrs;
+        self
+    }
+
     pub fn build(self) -> Analyzer {
         Analyzer { config: self }
     }

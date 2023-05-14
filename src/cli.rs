@@ -4,6 +4,7 @@ pub fn root_command() -> clap::Command {
         output_format_arg(),
         parse_elf_header_arg(),
         parse_elf_section_headers_arg(),
+        parse_elf_program_headers_arg(),
     ])
 }
 
@@ -32,6 +33,13 @@ fn parse_elf_header_arg() -> clap::Arg {
 fn parse_elf_section_headers_arg() -> clap::Arg {
     clap::Arg::new("parse-elf-section-headers")
         .long("parse-elf-section-headers")
+        .default_value("true")
+        .value_parser(clap::value_parser!(bool))
+}
+
+fn parse_elf_program_headers_arg() -> clap::Arg {
+    clap::Arg::new("parse-elf-program-headers")
+        .long("parse-elf-program-headers")
         .default_value("true")
         .value_parser(clap::value_parser!(bool))
 }

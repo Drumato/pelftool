@@ -15,6 +15,7 @@ fn main() -> anyhow::Result<()> {
     let elf_analyzer = analyzer::AnalyzerConfig::new()
         .ehdr(*matches.get_one("parse-elf-header").unwrap())
         .shdrs(*matches.get_one("parse-elf-section-headers").unwrap())
+        .phdrs(*matches.get_one("parse-elf-program-headers").unwrap())
         .build();
     println!("{}", elf_analyzer.elf_info(&elf_file)?.to_string());
 
