@@ -12,12 +12,18 @@ fn main() -> anyhow::Result<()> {
     let file_data = std::fs::read(path)?;
     let elf_file = elf::ElfBytes::<elf::endian::AnyEndian>::minimal_parse(file_data.as_slice())?;
 
-    let elf_analyzer = analyzer::AnalyzerConfig::new()
+    let elf_analyzer = analyzer::AnalyzerConfig::default()
         .ehdr(*matches.get_one("parse-elf-header").unwrap())
         .shdrs(*matches.get_one("parse-elf-section-headers").unwrap())
         .phdrs(*matches.get_one("parse-elf-program-headers").unwrap())
         .build();
-    println!("{}", elf_analyzer.elf_info(&elf_file)?.to_string());
+
+    match elf_analyzer.config.output_format {
+        analyzer::AnalyzerOutputFormat::Json => {
+            let json_value = elf_analyzer.elf_info_as_json(&elf_file)?;
+            println!("{}", json_value.to_string());
+        }
+    }
 
     Ok(())
 }

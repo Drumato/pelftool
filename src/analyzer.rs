@@ -2,21 +2,16 @@ mod elf_header;
 mod elf_section;
 mod elf_segment;
 
+/// component about the ELF analysis.
+/// it recognizes multiple output-format.
 pub struct Analyzer {
+    /// configurations about ELF analysis.
     pub config: AnalyzerConfig,
 }
 
 impl Analyzer {
-    pub fn elf_info(
-        &self,
-        elf_file: &elf::ElfBytes<elf::endian::AnyEndian>,
-    ) -> anyhow::Result<serde_json::Value> {
-        match self.config.output_format {
-            AnalyzerOutputFormat::Json => self.elf_info_as_json(elf_file),
-        }
-    }
-
-    fn elf_info_as_json(
+    /// construct the json-object from given ELF file.
+    pub fn elf_info_as_json(
         &self,
         elf_file: &elf::ElfBytes<elf::endian::AnyEndian>,
     ) -> anyhow::Result<serde_json::Value> {
@@ -57,8 +52,8 @@ pub struct AnalyzerConfig {
     pub output_format: AnalyzerOutputFormat,
 }
 
-impl AnalyzerConfig {
-    pub fn new() -> Self {
+impl Default for AnalyzerConfig {
+    fn default() -> Self {
         Self {
             ehdr: false,
             shdrs: false,
@@ -66,7 +61,9 @@ impl AnalyzerConfig {
             output_format: AnalyzerOutputFormat::Json,
         }
     }
+}
 
+impl AnalyzerConfig {
     pub fn ehdr(mut self, ehdr: bool) -> Self {
         self.ehdr = ehdr;
         self
@@ -82,11 +79,16 @@ impl AnalyzerConfig {
         self
     }
 
+    /// construct an analyzer with the configuration.
     pub fn build(self) -> Analyzer {
         Analyzer { config: self }
     }
 }
 
+/// determines the output format of the ELF analyzer's result.
 pub enum AnalyzerOutputFormat {
+    /// JSON
     Json,
+    // Yaml
+    // Tui
 }
