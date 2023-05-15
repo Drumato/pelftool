@@ -8,6 +8,16 @@ An experimental analyzer tool that replaces GNU binutils readelf.
   - [x] json
   - [ ] yaml
   - [ ] human-readable
+- analyzer features
+  - [x] ELF header
+  - [x] section header table
+  - [x] program header table
+  - [ ] symbol table
+  - [ ] relocation table
+  - [ ] hexdump output
+  - in TUI
+    - [ ] filtering by key
+
 
 ## Usage
 
