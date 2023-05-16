@@ -21,7 +21,7 @@ fn main() -> anyhow::Result<()> {
     match elf_analyzer.config.output_format {
         analyzer::AnalyzerOutputFormat::Json => {
             let json_value = elf_analyzer.elf_info_as_json(&elf_file)?;
-            println!("{}", json_value.to_string());
+            println!("{}", json_value);
         }
     }
 

@@ -6,37 +6,58 @@ impl Analyzer {
         elf_file: &elf::ElfBytes<elf::endian::AnyEndian>,
     ) -> anyhow::Result<serde_json::Value> {
         let s = match elf_file.section_headers_with_strtab() {
-            Ok((sht, sht_names)) => match sht {
-                Some(sht) => serde_json::json!({
-                    "entries": sht.len(),
-                    "headers": sht.iter().map(|sh| self.elf_named_section_header_info_as_json(sh, sht_names.unwrap())).collect::<Vec<serde_json::Value>>(),
-                    "exist": true,
-                }),
-                None => serde_json::json!({
-                    "headers": Vec::<serde_json::Value>::new(),
-                    "entries": 0,
-                    "exist": false,
-                }),
-            },
+            // construct information with section name string
+            Ok((sht, sht_names)) => {
+                self.elf_named_section_header_table_info_as_json(sht, sht_names)
+            }
+            // each section information has the raw sh_name as its name
             Err(e) => {
-                log::warn!("{}", e);
+                log::info!("{}", e);
 
-                match elf_file.section_headers() {
-                    Some(sht) => serde_json::json!({
-                        "entries": sht.len(),
-                        "headers": sht.iter().map(|sh| self.elf_section_header_info_as_json(sh, sh.sh_name.to_string())).collect::<Vec<serde_json::Value>>(),
-                        "exist": true,
-                    }),
-                    None => serde_json::json!({
-                        "headers": Vec::<serde_json::Value>::new(),
-                        "entries": 0,
-                        "exist": false,
-                    }),
-                }
+                self.elf_noname_section_header_table_info_as_json(elf_file.section_headers())
             }
         };
 
         Ok(s)
+    }
+
+    fn elf_named_section_header_table_info_as_json(
+        &self,
+        sht: Option<elf::parse::ParsingTable<elf::endian::AnyEndian, elf::section::SectionHeader>>,
+        sht_names: Option<elf::string_table::StringTable>,
+    ) -> serde_json::Value {
+        let Some(sht) = sht else {
+            return serde_json::json!({
+                "headers": Vec::<serde_json::Value>::new(),
+                "entries": 0,
+                "exist": false,
+            });
+        };
+
+        serde_json::json!({
+            "entries": sht.len(),
+            "headers": sht.iter().map(|sh| self.elf_named_section_header_info_as_json(sh, sht_names.unwrap())).collect::<Vec<serde_json::Value>>(),
+            "exist": true,
+        })
+    }
+
+    fn elf_noname_section_header_table_info_as_json(
+        &self,
+        sht: Option<elf::parse::ParsingTable<elf::endian::AnyEndian, elf::section::SectionHeader>>,
+    ) -> serde_json::Value {
+        let Some(sht) = sht else {
+            return serde_json::json!({
+                "headers": Vec::<serde_json::Value>::new(),
+                "entries": 0,
+                "exist": false,
+            });
+        };
+
+        serde_json::json!({
+            "entries": sht.len(),
+            "headers": sht.iter().map(|sh| self.elf_section_header_info_as_json(sh, sh.sh_name.to_string())).collect::<Vec<serde_json::Value>>(),
+            "exist": true,
+        })
     }
 
     fn elf_named_section_header_info_as_json(
