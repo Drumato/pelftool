@@ -16,7 +16,7 @@ impl Analyzer {
         elf_file: &elf::ElfBytes<elf::endian::AnyEndian>,
     ) -> anyhow::Result<serde_json::Value> {
         let ehdr_value = if self.config.ehdr {
-            self.elf_header_info_as_json(elf_file)
+            self.elf_header_info_as_json(&elf_file.ehdr)
         } else {
             serde_json::json!({})
         };
@@ -28,7 +28,7 @@ impl Analyzer {
         };
 
         let phdrs_value = if self.config.phdrs {
-            self.elf_program_header_table_info_as_json(elf_file)
+            self.elf_program_header_table_info_as_json(elf_file.segments())
         } else {
             serde_json::json!({})
         };

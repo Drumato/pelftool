@@ -3,23 +3,21 @@ use super::Analyzer;
 impl Analyzer {
     pub(super) fn elf_program_header_table_info_as_json(
         &self,
-        elf_file: &elf::ElfBytes<elf::endian::AnyEndian>,
+        pht: Option<elf::segment::SegmentTable<elf::endian::AnyEndian>>,
     ) -> serde_json::Value {
-        match elf_file.segments() {
-            Some(pht) => {
-                serde_json::json!({
-                    "entries": pht.len(),
-                    "headers": pht.iter().map(|ph| self.elf_program_header_info_as_json(ph)).collect::<Vec<serde_json::Value>>(),
-                    "exist": true,
-                })
-            }
-            None => serde_json::json!({
+        let Some(pht) = pht else {
+            return serde_json::json!({
                 "entries": 0,
                 "headers": Vec::<serde_json::Value>::new(),
                 "exist": false,
+            });
+        };
 
-            }),
-        }
+        serde_json::json!({
+            "entries": pht.len(),
+            "headers": pht.iter().map(|ph| self.elf_program_header_info_as_json(ph)).collect::<Vec<serde_json::Value>>(),
+            "exist": true,
+        })
     }
 
     fn elf_program_header_info_as_json(
