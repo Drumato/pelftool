@@ -20,7 +20,7 @@ fn output_format_arg() -> clap::Arg {
         .short('o')
         .long("output-format")
         .default_value("json")
-        .value_parser(["json"])
+        .value_parser(["json", "tui"])
 }
 
 fn parse_elf_header_arg() -> clap::Arg {
