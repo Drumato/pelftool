@@ -79,6 +79,11 @@ impl AnalyzerConfig {
         self
     }
 
+    pub fn output_format(mut self, output_format: AnalyzerOutputFormat) -> Self {
+        self.output_format = output_format;
+        self
+    }
+
     /// construct an analyzer with the configuration.
     pub fn build(self) -> Analyzer {
         Analyzer { config: self }
@@ -86,9 +91,10 @@ impl AnalyzerConfig {
 }
 
 /// determines the output format of the ELF analyzer's result.
+#[derive(Copy, Clone)]
 pub enum AnalyzerOutputFormat {
     /// JSON
     Json,
     // Yaml
-    // Tui
+    Tui,
 }
